@@ -1,4 +1,4 @@
-module design-pattern
+module desktop-mono
 
 go 1.18
 

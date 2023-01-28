@@ -15,6 +15,11 @@ var (
 	// Tutorials defines the metadata for each tutorial
 	Tutorials = map[string]Tutorial{
 		"welcome": {"Welcome", "", welcomeScreen, true},
+		"youtube": {"Youtube",
+			"See Youtube Feature",
+			youtubeScreen,
+			true,
+		},
 		"canvas": {"Canvas",
 			"See the canvas capabilities.",
 			canvasScreen,
