@@ -2,6 +2,8 @@ package apis
 
 import (
 	"desktop-mono/configs"
+	debugs "desktop-mono/debug-tools"
+	"encoding/json"
 	"flag"
 	"log"
 	"net/http"
@@ -13,9 +15,10 @@ import (
 var maxResults = flag.Int64("max-results", 25, "Max YouTube results")
 
 type SearchResult struct {
-	Title        string
-	ChannelId    string
-	Desecription string
+	Title       string `json:"title"`
+	ChannelId   string `json:"ChannelId"`
+	Description string `json:"description"`
+	Thumbnail   string `json:"thumbnail"`
 }
 
 func SearchVideos(keyword string) []SearchResult {
@@ -43,11 +46,21 @@ func SearchVideos(keyword string) []SearchResult {
 	}
 
 	var searchResult []SearchResult
+
+	bytearray, err := json.Marshal(response.Items)
+
+	if err != nil {
+		panic("failed marshal" + err.Error())
+	}
+
+	debugs.PrintPrettyJSON(string(bytearray))
+
 	for _, value := range response.Items {
 		loopdata := SearchResult{
 			value.Snippet.Title,
 			value.Snippet.ChannelId,
 			value.Snippet.Description,
+			value.Snippet.Thumbnails.Default.Url,
 		}
 		searchResult = append(searchResult, loopdata)
 	}

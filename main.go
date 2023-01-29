@@ -50,7 +50,7 @@ func main() {
 		Items: []*widget.FormItem{ // we can specify items in the constructor
 			{Text: "Search Video", Widget: entry}},
 		OnSubmit: func() {
-			result = apis.SearchVideos(entry.Text)
+			apis.SearchVideos(entry.Text)
 		},
 	}
 
