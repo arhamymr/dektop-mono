@@ -2,20 +2,32 @@
 package main
 
 import (
+	"desktop-mono/apis"
+	"desktop-mono/configs"
 	"desktop-mono/layouts"
-	"desktop-mono/tutorials"
+	"desktop-mono/screens"
 	"desktop-mono/utils"
+	"fmt"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
 var topWindow fyne.Window
 
+func openTutorial(a fyne.App) {
+	wTutor := a.NewWindow("Tutorial")
+	wTutor.SetContent(screens.TutorialScreen())
+	wTutor.Resize(fyne.NewSize(640, 460))
+	wTutor.Show()
+}
+
 func main() {
+	configs.LoadEnv()
 	a := app.NewWithID("Desktop Mono")
 	a.SetIcon(theme.FyneLogo())
 
@@ -26,43 +38,46 @@ func main() {
 	utils.LogLifecycle(a)
 	w := a.NewWindow("Desktop Mono")
 	topWindow = w
-
-	// navigation menu
-	w.SetMainMenu(layouts.MakeMenu(a, w))
 	w.SetMaster()
 
-	content := container.NewMax()
-	title := widget.NewLabel("Component name")
-	intro := widget.NewLabel("An introduction would probably go\nhere, as well as a")
-	intro.Wrapping = fyne.TextWrapWord
-	setTutorial := func(t tutorials.Tutorial) {
-		if fyne.CurrentDevice().IsMobile() {
-			child := a.NewWindow(t.Title)
-			topWindow = child
-			child.SetContent(t.View(topWindow))
-			child.Show()
-			child.SetOnClosed(func() {
-				topWindow = w
-			})
-			return
-		}
+	// navigation menu
 
-		title.SetText(t.Title)
-		intro.SetText(t.Intro)
+	entry := widget.NewEntry()
 
-		content.Objects = []fyne.CanvasObject{t.View(w)}
-		content.Refresh()
+	var result []apis.SearchResult
+
+	form := &widget.Form{
+		Items: []*widget.FormItem{ // we can specify items in the constructor
+			{Text: "Search Video", Widget: entry}},
+		OnSubmit: func() {
+			result = apis.SearchVideos(entry.Text)
+		},
 	}
 
-	tutorial := container.NewBorder(
-		container.NewVBox(title, widget.NewSeparator(), intro), nil, nil, nil, content)
-	if fyne.CurrentDevice().IsMobile() {
-		w.SetContent(layouts.MakeNav(setTutorial, false))
-	} else {
-		split := container.NewHSplit(layouts.MakeNav(setTutorial, true), tutorial)
-		split.Offset = 0.2
-		w.SetContent(split)
-	}
+	fmt.Println(result, "result inside")
+	// tutorialButton := widget.NewButton("Open new", func() {
+	// 	openTutorial(a)
+	// })
+
+	w.SetMainMenu(layouts.MakeMenu(a, w))
+
+	// formlayout := container.New(layout.NewFormLayout(), form)
+	content := container.New(layout.NewMaxLayout(), form)
+	var data = []string{"a", "string", "list"}
+
+	list := container.New(layout.NewMaxLayout(), widget.NewList(
+		func() int {
+			return len(data)
+		},
+		func() fyne.CanvasObject {
+			return widget.NewLabel("template")
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			o.(*widget.Label).SetText(data[i])
+			o.(*widget.Label).SetText("test")
+		}))
+
+	w.SetContent(container.New(layout.NewVBoxLayout(), list, content))
 	w.Resize(fyne.NewSize(640, 460))
 	w.ShowAndRun()
 }
